@@ -1,8 +1,5 @@
-// Ripple
-//
-// Converted (but not optimized) from the Neopixel version https://gist.github.com/suhajdab/9716635
-//
-// Conversion by Andrew Tuline
+//Squish Pond for East Austin Studio Tour 2017 - Debra Lemak 
+// Using "Ripple" Conversion by Andrew Tuline
 //
 
 
@@ -20,26 +17,33 @@ int step = -1;
 int maxSteps = 16;
 float fadeRate = 0.8;
 int diff;
- 
+int buttonPin = 3; 
+int buttonState = 0;
+int hueValue = 140;
+int splashZone01 [] = {0,1,2,3,4,5,6
+}; 
 //background color
-uint32_t currentBg = random(256);
+uint32_t currentBg = hueValue;
 uint32_t nextBg = currentBg;
  
 void setup() {
 
   Serial.begin(9600);
   LEDS.addLeds<WS2811, LED_DT, GRB>(leds, NUM_LEDS);
-
+  pinMode(buttonPin, INPUT); 
 }
  
 void loop () {
+  buttonState = digitalRead(buttonPin);
+ if (buttonState ==HIGH) {
   ripple();
+  }
 }
  
 void ripple() {
 
     if (currentBg == nextBg) {
-      nextBg = random(256);
+      nextBg = hueValue;
     } 
     else if (nextBg > currentBg) {
       currentBg++;
@@ -52,23 +56,23 @@ void ripple() {
  
   if (step == -1) {
     center = random(NUM_LEDS);
-    color = random(256);
+    color = hueValue;
     step = 0;
   }
  
   if (step == 0) {
-    leds[center] = CHSV(color, 255, 255);         // strip.setPixelColor(center, Wheel(color, 1));
+    leds[center] = CHSV(color, 255, 255);         
     step ++;
   } 
   else {
     if (step < maxSteps) {
       Serial.println(pow(fadeRate,step));
 
-      leds[wrap(center + step)] = CHSV(color, 255, pow(fadeRate, step)*255);       //   strip.setPixelColor(wrap(center + step), Wheel(color, pow(fadeRate, step)));
-      leds[wrap(center - step)] = CHSV(color, 255, pow(fadeRate, step)*255);       //   strip.setPixelColor(wrap(center - step), Wheel(color, pow(fadeRate, step)));
+      leds[wrap(center + step)] = CHSV(color, 255, pow(fadeRate, step)*255);       
+      leds[wrap(center - step)] = CHSV(color, 255, pow(fadeRate, step)*255);       
       if (step > 3) {
-        leds[wrap(center + step - 3)] = CHSV(color, 255, pow(fadeRate, step - 2)*255);     //   strip.setPixelColor(wrap(center + step - 3), Wheel(color, pow(fadeRate, step - 2)));
-        leds[wrap(center - step + 3)] = CHSV(color, 255, pow(fadeRate, step - 2)*255);     //   strip.setPixelColor(wrap(center - step + 3), Wheel(color, pow(fadeRate, step - 2)));
+        leds[wrap(center + step - 3)] = CHSV(color, 255, pow(fadeRate, step - 2)*255);     
+        leds[wrap(center - step + 3)] = CHSV(color, 255, pow(fadeRate, step - 2)*255);    
       }
       step ++;
     } 
@@ -89,28 +93,7 @@ int wrap(int step) {
 }
  
 
-void one_color_allHSV(int ahue, int abright) {                // SET ALL LEDS TO ONE COLOR (HSV)
-  for (int i = 0 ; i < NUM_LEDS; i++ ) {
-    leds[i] = CHSV(ahue, 255, abright);
-  }
-}
 
 
  
-// Input a value 0 to 255 to get a color value.
-// The colours are a transition r - g - b - back to r.
-/* uint32_t Wheel(byte WheelPos, float opacity) {
-  
-  if(WheelPos < 85) {
-    return strip.Color((WheelPos * 3) * opacity, (255 - WheelPos * 3) * opacity, 0);
-  } 
-  else if(WheelPos < 170) {
-    WheelPos -= 85;
-    return strip.Color((255 - WheelPos * 3) * opacity, 0, (WheelPos * 3) * opacity);
-  } 
-  else {
-    WheelPos -= 170;
-    return strip.Color(0, (WheelPos * 3) * opacity, (255 - WheelPos * 3) * opacity);
-  }
-}
-*/
+
