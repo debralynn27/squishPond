@@ -1,6 +1,9 @@
 //Squish Pond for East Austin Studio Tour 2017 - Debra Lemak 
+#include "FastLED.h"
 
 #define NUM_LEDS_PER_STRIP 5
+#define NUM_STRIPS 3
+#define NUM_LEDS NUM_LEDS_PER_STRIP*NUM_STRIPS
 #define LED_TYPE   WS2811
 #define COLOR_ORDER   RGB
 
@@ -11,18 +14,18 @@
 
 int buttonPin = 3; 
 int buttonState = 0;
-int offCounter = 0 
+int offCounter = 0; 
 
 
 CRGB leds[NUM_LEDS_PER_STRIP];
 
 void setup() {
   delay( 3000 ); //safety startup delay
-  FastLED.addLeds<LED_TYPE,STRAND11,COLOR_ORDER>(leds, NUM_LEDS_PER_STRIP)
-  FastLED.addLeds<LED_TYPE,STRAND12,COLOR_ORDER>(leds, NUM_LEDS_PER_STRIP)
-  FastLED.addLeds<LED_TYPE,STRAND13,COLOR_ORDER>(leds, NUM_LEDS_PER_STRIP)
+  FastLED.addLeds<LED_TYPE,STRAND11,COLOR_ORDER>(leds, NUM_LEDS_PER_STRIP);
+  FastLED.addLeds<LED_TYPE,STRAND12,COLOR_ORDER>(leds, NUM_LEDS_PER_STRIP);
+  FastLED.addLeds<LED_TYPE,STRAND13,COLOR_ORDER>(leds, NUM_LEDS_PER_STRIP);
   ///Using FastLED reference to mirror strips - https://github.com/FastLED/FastLED/wiki/Multiple-Controller-Examples 
-  .setCorrection(TypicalLEDStrip);
+//  .setCorrection(TypicalLEDStrip);
   pinMode(buttonPin, INPUT); 
 }
 
@@ -44,7 +47,7 @@ void loop() {
      }
    else if (buttonState == LOW) { 
    offCounter++; 
-   if offCounter < 300) {
+   if (offCounter < 300) {
    //referencing fading from https://github.com/FastLED/FastLED/wiki/Pixel-reference 
      leds[0].fadeLightBy( 90);
      leds[0].fadeLightBy( 90);
@@ -53,7 +56,7 @@ void loop() {
      leds[0].fadeLightBy( 64);
      addGlitter(30); 
      }
-   else if offCounter < 1000) {
+   else if (offCounter < 1000) {
      leds[0].fadeLightBy( 200);
      leds[0].fadeLightBy( 200);
      leds[0].fadeLightBy( 90);
@@ -63,7 +66,7 @@ void loop() {
      }
    }
    else  {
-   fill_solid( leds, NUM_LEDS, Seashell);
+   fill_solid( leds, NUM_LEDS, CRGB::Seashell);
    }
    FastLED.show();
 }
