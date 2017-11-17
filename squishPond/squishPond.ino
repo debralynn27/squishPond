@@ -2,88 +2,108 @@
 //Debra Lemak 11/16/17
 
 #include "FastLED.h"
-#include <CapacitiveSensor.h>
-//https://github.com/PaulStoffregen/CapacitiveSensor
 
 #define NUM_LEDS_PER_STRIP 5
 #define NUM_STRIPS 3
 #define NUM_LEDS NUM_LEDS_PER_STRIP*NUM_STRIPS
 #define LED_TYPE   WS2811
 #define COLOR_ORDER   RGB
-#define BRIGHTNESS  20
+#define BRIGHTNESS  80
 #define FRAMES_PER_SECOND 60
+#define SENSOR1 7
+#define STRANDS1 9
 
-#define STRANDS1        9
-#define STRANDS2        10
-#define STRANDS3        11
+// Sensors
+const int sensorPin01 = 7;
 
 int sensorPressed = 0;
 int sensor1Counter = 0; 
-int sensor2Counter = 0;
-int sensor3Counter = 0;
-
-const int s1on = 1;
-const int s2on = 2;
-const int s3on = 3;
 
 CRGB cluster1[NUM_LEDS_PER_STRIP];
-CRGB cluster2[NUM_LEDS_PER_STRIP];
-CRGB cluster3[NUM_LEDS_PER_STRIP];
+
 
 TBlendType blendingType; 
 //tBlendType is a data type like int/char/uint8_t etc., used to choose LINERBLEND and NOBLEND
 
-  CapacitiveSensor   cs_4_0 = CapacitiveSensor(4,0);   // 1M resistor between pins 4 & 8, pin 8 is sensor pin, add a wire and or foil
-  CapacitiveSensor   cs_4_1 = CapacitiveSensor(4,1);   // 1M resistor between pins 4 & 8, pin 8 is sensor pin, add a wire and or foil
-  CapacitiveSensor   cs_4_2 = CapacitiveSensor(4,2); // 1M resistor between pins 4 & 8, pin 8 is sensor pin, add a wire and or foil
-
+ 
 void setup() {
   delay( 3000 ); //safety startup delay
   FastLED.addLeds<LED_TYPE,STRANDS1,COLOR_ORDER>(cluster1, NUM_LEDS_PER_STRIP);
-  FastLED.addLeds<LED_TYPE,STRANDS2,COLOR_ORDER>(cluster2, NUM_LEDS_PER_STRIP);
-  FastLED.addLeds<LED_TYPE,STRANDS3,COLOR_ORDER>(cluster3, NUM_LEDS_PER_STRIP);
-
+  Serial.begin(9600);
+  pinMode(sensorPin01, INPUT);
   blendingType = LINEARBLEND;                       // options are LINEARBLEND or NOBLEND - linear is 'cleaner'
   FastLED.setBrightness( BRIGHTNESS );
   FastLED.clear();
 }
 
 
-///////////////////////////Functiony Goodness///////////////////////////////////////////////////////
-////// Glitter Bombs! 
-void addGlitter1( fract8 chanceOfGlitter) 
+//////////////////////////////////////////////////////////////////////////////////
+
+void loop() {
+  if (digitalRead(sensorPin01) == HIGH) {
+       Serial.println ("sensor1 pressed");
+       Serial.print ("  ");
+       sensorPressed = 1;
+       aquapaint();
+       addGlitter(80);
+       sensor1Counter = 1;
+      }
+  else {
+      Serial.print ("no sensor1");
+      FastLED.clear();
+      sensor1trail();
+      sensorPressed = 0;
+      }  
+  FastLED.show();
+ }
+
+
+void aquapaint (){
+    for( int i = 0; i < NUM_LEDS_PER_STRIP; i++) {
+    float fractionOfTheWayAlongTheStrip = (float)i / (float)(NUM_LEDS_PER_STRIP-1);
+    uint8_t amountOfBlending = fractionOfTheWayAlongTheStrip * 255;
+    CRGB pixelColor = blend( CHSV(100, 255, 255),  CHSV(130, 255, 255), amountOfBlending);
+    cluster1[i] = pixelColor;
+  }}
+
+void addGlitter( fract8 chanceOfGlitter) 
 {
   if( random8() < chanceOfGlitter) {
     cluster1[ random16(NUM_LEDS_PER_STRIP) ] += CRGB::White;
   }
 }
 
-void addGlitter2( fract8 chanceOfGlitter) 
-{
-  if( random8() < chanceOfGlitter) {
-    cluster2[ random16(NUM_LEDS_PER_STRIP) ] += CRGB::White;
-  }
+void sensor1trail() {
+  if (sensorPressed != 1 && sensor1Counter>=1) { 
+   sensor1Counter++; 
+   if (sensor1Counter < 300) {
+   //referencing fading from /https://github.com/FastLED/FastLED/wiki/Pixel-reference 
+     cluster1[0].fadeLightBy( 90);
+     cluster1[1].fadeLightBy( 90);
+     cluster1[2].fadeLightBy( 64);
+     cluster1[3].fadeLightBy( 64);
+     cluster1[4].fadeLightBy( 64);
+     addGlitter(30); 
+     }
+   if (sensor1Counter < 1000) {
+     cluster1[0].fadeLightBy( 200);
+     cluster1[1].fadeLightBy( 200);
+     cluster1[2].fadeLightBy( 90);
+     cluster1[3].fadeLightBy( 90);
+     cluster1[4].fadeLightBy( 90);
+     addGlitter(5); 
+     }
+    else if (sensor1Counter > 2000){
+      sensor1Counter = 0; 
+    }
+   }
 }
 
-void addGlitter3( fract8 chanceOfGlitter) 
-{
-  if( random8() < chanceOfGlitter) {
-    cluster3[ random16(NUM_LEDS_PER_STRIP) ] += CRGB::White;
-  }
-}
-
-
-void lookatThings() {
-  // Read touch sensors
-  long sensor1 =  cs_4_0.capacitiveSensor(80);
-  long sensor2 =  cs_4_1.capacitiveSensor(80);
-  long sensor3 =  cs_4_2.capacitiveSensor(80);
+/*
   
-  if (sensor1 >= 1000) {
-    sensorPressed = s1on;
-    return sensorPressed;
+  
   } 
-  if (sensor2 >= 1000) {
+if (sensor2 >= 1000) {
     sensorPressed = s2on;
     return sensorPressed;
   } 
@@ -107,7 +127,7 @@ void setActive() {
        sensor1Counter = 1;
       break;
       
-    case s2on:
+  /*  case s2on:
        cluster2[0] = CRGB::Turquoise;
        cluster2[1] = CRGB::Turquoise;
        cluster2[2] = CRGB::AliceBlue;
@@ -129,34 +149,7 @@ void setActive() {
 }
 }
 
-void sensor1trail() {
-  if (sensorPressed != s1on && sensor1Counter>=1) { 
-   sensor1Counter++; 
-   if (sensor1Counter < 300) {
-   //referencing fading from /https://github.com/FastLED/FastLED/wiki/Pixel-reference 
-     cluster1[0].fadeLightBy( 90);
-     cluster1[1].fadeLightBy( 90);
-     cluster1[2].fadeLightBy( 64);
-     cluster1[3].fadeLightBy( 64);
-     cluster1[4].fadeLightBy( 64);
-     addGlitter1(30); 
-     }
-   if (sensor1Counter < 1000) {
-     cluster1[0].fadeLightBy( 200);
-     cluster1[1].fadeLightBy( 200);
-     cluster1[2].fadeLightBy( 90);
-     cluster1[3].fadeLightBy( 90);
-     cluster1[4].fadeLightBy( 90);
-     addGlitter1(5); 
-     }
-    else if (sensor1Counter > 2000){
-      sensor1Counter = 0; 
-    }
-   }
-   else  {
-   fill_solid( cluster1, NUM_LEDS, CRGB::Seashell);
-   }
-}
+
 
 void sensor2trail() {
   if (sensorPressed != s2on && sensor2Counter>=1) { 
@@ -216,20 +209,12 @@ void sensor3trail() {
 
 void setTrailing(){
     sensor1trail();
-    sensor2trail();
-    sensor3trail();
+  //  sensor2trail();
+   // sensor3trail();
     }
 
+*/
 
 
-//////////////////////////////////////////////////////////////////////////////////
-
-void loop() {
-  lookatThings();
-  setActive();
-  setTrailing();
-  FastLED.show();
-  FastLED.delay(1000/FRAMES_PER_SECOND); 
-}
   
 
