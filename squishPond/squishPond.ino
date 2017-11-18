@@ -15,17 +15,17 @@
 
 // Sensors
 const int sensorPin01 = 7;
-
 int sensorPressed = 0;
-int sensor1Counter = 0; 
+int sensor1Counter = 0;
+unsigned long startTime = millis();
+unsigned long firstInterval = 15000UL; // 15 seconds
+unsigned long secondInterval = 30000UL; // 15 seconds
 
 CRGB cluster1[NUM_LEDS_PER_STRIP];
-
 
 TBlendType blendingType; 
 //tBlendType is a data type like int/char/uint8_t etc., used to choose LINERBLEND and NOBLEND
 
- 
 void setup() {
   delay( 3000 ); //safety startup delay
   FastLED.addLeds<LED_TYPE,STRANDS1,COLOR_ORDER>(cluster1, NUM_LEDS_PER_STRIP);
@@ -40,6 +40,7 @@ void setup() {
 //////////////////////////////////////////////////////////////////////////////////
 
 void loop() {
+  /*
   if (digitalRead(sensorPin01) == HIGH) {
        Serial.println ("sensor1 pressed");
        Serial.print ("  ");
@@ -47,13 +48,25 @@ void loop() {
        aquapaint();
        addGlitter(80);
        sensor1Counter = 1;
-      }
-  else {
+  } else {
       Serial.print ("no sensor1");
       FastLED.clear();
       sensor1trail();
       sensorPressed = 0;
-      }  
+  }  
+  */
+
+  if(millis() - startTime < firstInterval)
+  {
+    aquapaint();
+    addGlitter(80);
+  } else if (millis() - startTime < secondInterval) {
+    FastLED.clear();
+    sensor1trail();
+  } else {
+    startTime = millis();
+  }
+  
   FastLED.show();
  }
 
