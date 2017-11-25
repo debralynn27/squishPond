@@ -9,15 +9,15 @@
 #define LED_TYPE   WS2811
 #define COLOR_ORDER   RGB 
 #define BRIGHTNESS  255
-#define FRAMES_PER_SECOND 160
+#define FRAMES_PER_SECOND 140
 
 CRGB leds[NUM_STRIPS][NUM_LEDS_PER_STRIP];
 
 // Intervals
 unsigned long startTime = millis();
-unsigned long firstInterval = 1000UL; // 15 seconds
-unsigned long secondInterval = 3000UL; // 10 seconds
-unsigned long thirdInterval = 6000UL; // 10 seconds
+unsigned long firstInterval = 1000UL;
+unsigned long secondInterval = 3000UL;
+unsigned long thirdInterval = 6000UL;
 
 class Sensor {
   public:
@@ -68,21 +68,6 @@ void setup() {
 void loop() {
   checkInputs();
   renderEffects();
-  /*
-  if(millis() - startTime < firstInterval)
-  {
-    aquapaint();
-    addGlitter(80);
-  } else if (millis() - startTime < secondInterval) {
-    trailoff1();
-  } else if (millis() - startTime < thirdInterval) {
-    trailoff2(); 
-  } else if (millis() - startTime < fourthInterval) {
-    FastLED.clear();  
-  } else {
-    startTime = millis();
-  }
-  */
   FastLED.show();
   FastLED.delay(1000/FRAMES_PER_SECOND);
   setPressed();
@@ -147,8 +132,14 @@ void renderEffects() {
 
 void ambient(int strip) 
 {
+  int ambientLow = 30;
   for( int i = 0; i < NUM_LEDS_PER_STRIP; i++) {
-    leds[strip][i] = CHSV(160, 0, 30);
+    int val = (((exp(sin(millis()/2000.0*PI)) - 0.36787944)*108.0)/4);
+    if (val > 35) {
+      leds[strip][i] = CHSV(0, 0, val);
+    } else {
+      leds[strip][i] = CHSV(0, 0, ambientLow);    
+    }
   }
 }
 
@@ -171,21 +162,21 @@ void addGlitter(int strip, fract8 chanceOfGlitter)
 
 void trailoff1(int strip) {
    //referencing fading from /https://github.com/FastLED/FastLED/wiki/Pixel-reference 
-     leds[strip][0].fadeLightBy(50);
-     leds[strip][1].fadeLightBy(80);
-     leds[strip][2].fadeLightBy(50);
-     leds[strip][3].fadeLightBy(80);
-     leds[strip][4].fadeLightBy(50);
+     leds[strip][0].fadeLightBy(64);
+     leds[strip][1].fadeLightBy(64);
+     leds[strip][2].fadeLightBy(64);
+     leds[strip][3].fadeLightBy(64);
+     leds[strip][4].fadeLightBy(64);
      addGlitter(strip, 30); 
 }
 
 void trailoff2(int strip) {
    //referencing fading from /https://github.com/FastLED/FastLED/wiki/Pixel-reference 
-     leds[strip][0].fadeLightBy(140);
-     leds[strip][1].fadeLightBy(200);
-     leds[strip][2].fadeLightBy(140);
-     leds[strip][3].fadeLightBy(200);
-     leds[strip][4].fadeLightBy(140);
+     leds[strip][0].fadeLightBy(64);
+     leds[strip][1].fadeLightBy(64);
+     leds[strip][2].fadeLightBy(64);
+     leds[strip][3].fadeLightBy(64);
+     leds[strip][4].fadeLightBy(64);
      addGlitter(strip, 10); 
 }
 
